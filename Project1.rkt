@@ -77,7 +77,7 @@
                         (eval-loop history))])
        (define tokens
          (filter (λ (s) (not (string=? s "")))
-                 (regexp-split #rx"\\s+" input)))
+                 (regexp-split #px"\\s+" input)))
        (define pair (eval-expr tokens history))
        (define val (first pair))
        (define rest (second pair))
