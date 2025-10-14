@@ -1,17 +1,8 @@
 #lang racket
 
-; working on code
-;run error
-
-(require racket/cmdline)
-
-(define args (vector->list (current-command-line-arguments)))
-(define interactive?
-  (not (or (member "-b" args)
-           (member "--batch" args))))
 
 (define (maybe-prompt)
-  (when interactive? (display "> ")))
+  (display "> "))
 
 
 (define (eval-expr tokens history)
@@ -21,42 +12,42 @@
 
     
     [(string=? (car tokens) "+")
-     (define res1 (eval-expr (cdr tokens) history))
-     (define val1 (first res1))
-     (define rest1 (second res1))
-     (define res2 (eval-expr rest1 history))
-     (define val2 (first res2))
-     (define rest2 (second res2))
-     (list (+ val1 val2) rest2)]
+     (define r1 (eval-expr (cdr tokens) history))
+     (define v1 (first r1))
+     (define rest1 (second r1))
+     (define r2 (eval-expr rest1 history))
+     (define v2 (first r2))
+     (define rest2 (second r2))
+     (list (+ v1 v2) rest2)]
 
     
     [(string=? (car tokens) "*")
-     (define res1 (eval-expr (cdr tokens) history))
-     (define val1 (first res1))
-     (define rest1 (second res1))
-     (define res2 (eval-expr rest1 history))
-     (define val2 (first res2))
-     (define rest2 (second res2))
-     (list (* val1 val2) rest2)]
+     (define r1 (eval-expr (cdr tokens) history))
+     (define v1 (first r1))
+     (define rest1 (second r1))
+     (define r2 (eval-expr rest1 history))
+     (define v2 (first r2))
+     (define rest2 (second r2))
+     (list (* v1 v2) rest2)]
 
     
     [(string=? (car tokens) "/")
-     (define res1 (eval-expr (cdr tokens) history))
-     (define val1 (first res1))
-     (define rest1 (second res1))
-     (define res2 (eval-expr rest1 history))
-     (define val2 (first res2))
-     (define rest2 (second res2))
-     (if (zero? val2)
+     (define r1 (eval-expr (cdr tokens) history))
+     (define v1 (first r1))
+     (define rest1 (second r1))
+     (define r2 (eval-expr rest1 history))
+     (define v2 (first r2))
+     (define rest2 (second r2))
+     (if (zero? v2)
          (error "Division by zero")
-         (list (/ val1 val2) rest2))]
+         (list (/ v1 v2) rest2))]
 
     
     [(string=? (car tokens) "-")
-     (define res1 (eval-expr (cdr tokens) history))
-     (define val1 (first res1))
-     (define rest1 (second res1))
-     (list (- val1) rest1)]
+     (define r1 (eval-expr (cdr tokens) history))
+     (define v1 (first r1))
+     (define rest1 (second r1))
+     (list (- v1) rest1)]
 
     
     [(regexp-match? #rx"^\\$[0-9]+$" (car tokens))
@@ -69,10 +60,10 @@
     [(string->number (car tokens))
      (list (string->number (car tokens)) (cdr tokens))]
 
-    [else
-     (error "Invalid Expression")]))
+    [else (error "Invalid Expression")]))
 
-;; Main loop
+
+
 (define (eval-loop history)
   (maybe-prompt)
   (define input (read-line))
@@ -87,21 +78,17 @@
        (define tokens
          (filter (λ (s) (not (string=? s "")))
                  (regexp-split #rx"\\s+" input)))
-       (define result-pair (eval-expr tokens history))
-       (define value (first result-pair))
-       (define remaining (second result-pair))
-       (if (not (null? (filter (λ (t) (not (string=? t ""))) remaining)))
+       (define pair (eval-expr tokens history))
+       (define val (first pair))
+       (define rest (second pair))
+       (if (not (null? (filter (λ (t) (not (string=? t ""))) rest)))
            (displayln "Error: Invalid Expression")
-           (let* ([value-fl (real->double-flonum value)]
-                  [new-history (cons value-fl history)]
-                  [id (length new-history)])
-             (if interactive?
-                 (begin
-                   (display id)
-                   (display ": ")
-                   (displayln value-fl))
-                 (displayln value-fl))
-             (eval-loop new-history))))]))
+           (let* ([valf (real->double-flonum val)]
+                  [newhist (cons valf history)]
+                  [id (length newhist)])
+             (display id) (display ": ") (displayln valf)
+             (eval-loop newhist))))]))
+
 
 (define (main) (eval-loop '()))
 (main)
